@@ -13,18 +13,41 @@
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-
   <meta name="application-name" content="Casa Mia">
-  <meta name="apple-mobile-web-app-title" content="Casa Mia">
 </head>
 
-<body>
+<body style="font-family:sans-serif;text-align:center;padding-top:40px">
+
+  <h2>Casa Mia</h2>
+  <p>Instalá la app para un mejor acceso</p>
+
+  <button id="installBtn" style="
+    padding:15px 25px;
+    font-size:16px;
+    background:#A8E063;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+  ">
+    📲 Instalar Casa Mia
+  </button>
+
   <script>
-    // Pequeña demora para que Chrome detecte PWA
-    setTimeout(function () {
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      document.getElementById('installBtn').style.display = 'inline-block';
+    });
+
+    document.getElementById('installBtn').addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
       window.location.href = "https://www.appsheet.com/start/111884a5-30bd-45d9-a382-196fde4884a6";
-    }, 600);
+    });
   </script>
+
 </body>
 </html>
