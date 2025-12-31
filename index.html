@@ -5,7 +5,6 @@
   <title>Casa Mia</title>
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#A8E063">
 
@@ -17,7 +16,6 @@
 </head>
 
 <body style="font-family:sans-serif;text-align:center;padding-top:40px">
-
   <h2>Casa Mia</h2>
   <p id="msg">Cargando aplicación…</p>
 
@@ -36,50 +34,60 @@
   <script>
     const APP_URL = "https://www.appsheet.com/start/111884a5-30bd-45d9-a382-196fde4884a6";
 
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-    // Si está instalada → abrir AppSheet
-    if (isStandalone) {
-      window.location.replace(APP_URL);
-    }
+    if (isMobile) {
+      // Si está instalada → abrir AppSheet
+      if (isStandalone) {
+        window.location.replace(APP_URL);
+      }
 
-    // Si es PC → abrir directo (sin instalar)
-    if (!isMobile) {
-      window.location.replace(APP_URL);
-    }
+      // Manejar instalación PWA
+      let deferredPrompt = null;
 
-    let deferredPrompt = null;
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
+        document.getElementById('msg').innerText = "Instalá la app para un acceso rápido";
+        document.getElementById('installBtn').style.display = 'inline-block';
+      });
 
+      document.getElementById('installBtn').addEventListener('click', async () => {
+        if (!deferredPrompt) {
+          alert("Usá el menú ⋮ y tocá “Instalar Casa Mia”");
+          return;
+        }
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        window.location.replace(APP_URL);
+      });
+
+      // Fallback si Chrome no dispara evento
+      setTimeout(() => {
+        if (!deferredPrompt) {
+          document.getElementById('msg').innerText =
+            "Abrí el menú ⋮ y tocá “Instalar Casa Mia”";
+        }
+      }, 1500);
+
+    } else {
+      // Mensaje para escritorio
       document.getElementById('msg').innerText =
-        "Instalá la app para un acceso rápido";
+        "Esta aplicación funciona mejor en un celular. Abrí este enlace desde tu dispositivo móvil:";
+      
+      // Mostrar el link directo
+      const link = document.createElement('a');
+      link.href = APP_URL;
+      link.innerText = "Abrir Casa Mia";
+      link.style.display = "block";
+      link.style.marginTop = "20px";
+      link.style.fontSize = "18px";
+      link.target = "_blank";
 
-      document.getElementById('installBtn').style.display = 'inline-block';
-    });
-
-    document.getElementById('installBtn').addEventListener('click', async () => {
-      if (!deferredPrompt) {
-        alert("Usá el menú ⋮ y tocá “Instalar Casa Mia”");
-        return;
-      }
-
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      window.location.replace(APP_URL);
-    });
-
-    // Fallback en móvil si Chrome no dispara evento
-    setTimeout(() => {
-      if (isMobile && !deferredPrompt) {
-        document.getElementById('msg').innerText =
-          "Abrí el menú ⋮ y tocá “Instalar Casa Mia”";
-      }
-    }, 1500);
+      document.body.appendChild(link);
+    }
   </script>
-
 </body>
 </html>
